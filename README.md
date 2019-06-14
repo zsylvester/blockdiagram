@@ -26,4 +26,4 @@ bd.create_exploded_view(chb_3d.strat,chb_3d.facies,chb_3d.topo,h,3,3,gap,dx,ve,s
 
 ## License
 
-meanderpy is licensed under the Apache License 2.0
+'blockdiagram' is licensed under the Apache License 2.0
