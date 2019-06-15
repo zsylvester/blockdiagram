@@ -7,14 +7,10 @@
 
 ## Requirements
 
-numpy
-
-matplotlib
-
-mayavi
-
-scipy
-
+numpy  
+matplotlib  
+mayavi  
+scipy  
 PIL
 
 ## Usage
