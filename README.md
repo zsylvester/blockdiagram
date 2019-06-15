@@ -68,7 +68,7 @@ bd.create_random_cookie(chb_3d.strat,chb_3d.facies,chb_3d.topo,h,scale,ve,color_
                         ycoords[:-1],ycoords[1:],dx,bottom)
 ```
 <img src="https://github.com/zsylvester/blockdiagram/blob/master/fluvial_model_example_4.png" width="300">
-<img src="https://github.com/zsylvester/blockdiagram/blob/master/fluvial_model_example_5.png" width="800">
+<img src="https://github.com/zsylvester/blockdiagram/blob/master/fluvial_model_example_3.png" width="800">
 
 ## License
 
