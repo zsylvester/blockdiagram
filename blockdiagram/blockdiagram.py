@@ -32,7 +32,7 @@ def create_block_diagram(strat,dx,ve,xoffset,yoffset,scale,ci,strat_switch,conto
 
     X1 = scale*(xoffset + np.linspace(0,r-1,r)*dx)
     Y1 = scale*(yoffset + np.linspace(0,c-1,c)*dx)
-    mlab.surf(X1,Y1,z,warp_scale=ve,colormap='gist_earth',vmin=scale*topo_min,vmax=scale*topo_max)
+    mlab.surf(X1,Y1,z,warp_scale=ve,colormap='gist_earth',vmin=scale*topo_min,vmax=scale*topo_max) #, line_width=5.0, representation='wireframe')
     if contour_switch == 1:
         contours = list(np.arange(vmin,vmax,ci*scale)) # list of contour values
         mlab.contour_surf(X1,Y1,z,contours=contours,warp_scale=ve,color=(0,0,0),line_width=1.0)
@@ -375,7 +375,7 @@ def create_random_section_2_points(strat,facies,thalweg_z,h,scale,ve,color_mode,
     base = scipy.ndimage.map_coordinates(strat[:,:,0], np.vstack((Yrand,Xrand)))
     vertices, triangles = create_section(base,dx,bottom) 
     gray = (0.6,0.6,0.6) # color for plotting basal part of panel
-    mlab.triangular_mesh(np.hstack((dx*Xrand,dx*Xrand[::-1])),np.hstack((dx*Yrand,dx*Yrand[::-1])),ve*vertices[:,1],triangles,color=gray)
+    mlab.triangular_mesh(scale*np.hstack((dx*Xrand,dx*Xrand[::-1])),scale*np.hstack((dx*Yrand,dx*Yrand[::-1])),scale*ve*vertices[:,1],triangles,color=gray)
     for layer_n in range(0,ts-1):
         update_progress(layer_n/(ts-1))
         vmin = thalweg_z[layer_n] # minimum elevation (for colormap)
@@ -435,7 +435,9 @@ def create_random_cookie(strat,facies,topo,h,scale,ve,color_mode,colors,x1,x2,y1
     r,c = np.shape(strat[:,:,-1])
     Y1 = scale*(np.linspace(0,r-1,r)*dx)
     X1 = scale*(np.linspace(0,c-1,c)*dx)
-    mlab.surf(X1,Y1,mask.T,warp_scale=ve,colormap='gist_earth')
+    topo_min = np.min(strat[:,:,-1])
+    topo_max = np.max(strat[:,:,-1])
+    mlab.surf(X1,Y1,scale*mask.T,warp_scale=ve,colormap='gist_earth',vmin=scale*topo_min,vmax=scale*topo_max)
         
 def compute_derivatives(x,y):
     dx = np.diff(x) # first derivatives
@@ -443,3 +445,29 @@ def compute_derivatives(x,y):
     ds = np.sqrt(dx**2+dy**2)
     s = np.hstack((0,np.cumsum(ds)))
     return dx, dy, ds, s
+
+class LineBuilder:
+    def __init__(self, line):
+        self.line = line
+        self.xs = list(line.get_xdata())
+        self.ys = list(line.get_ydata())
+        self.cid = line.figure.canvas.mpl_connect('button_press_event', self)
+
+    def __call__(self, event):
+        if event.inaxes!=self.line.axes: return
+        self.xs.append(event.xdata)
+        self.ys.append(event.ydata)
+        self.line.set_data(self.xs, self.ys)
+        self.line.figure.canvas.draw()
+
+def select_random_section(strat):
+    fig = plt.figure(figsize=(8,6))
+    ax = fig.add_subplot(111)
+    ax.imshow(strat[:,:,-1],cmap='viridis')
+    plt.tight_layout()
+    ax.set_title('click to build line segments')
+    line, = ax.plot([], [])  # empty line
+    linebuilder = LineBuilder(line)
+    xcoords = linebuilder.xs
+    ycoords = linebuilder.ys
+    return xcoords, ycoords
