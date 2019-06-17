@@ -357,7 +357,11 @@ def plot_layers_on_one_side(layer_n,facies,color_mode,colors,X1,Y1,Z1,ve,triangl
         mlab.triangular_mesh(X1,Y1,ve*Z1,triangles,color=cmap(norm(layer_n))[:3])
     if color_mode == 'property':
         if facies[layer_n] == 1:
-            mesh = mlab.triangular_mesh(X1,Y1,ve*Z1,triangles,scalars=scalars,colormap='YlOrBr',vmin=vmin,vmax=vmax)
+            mesh = mlab.triangular_mesh(X1,Y1,ve*Z1,triangles,scalars=scalars) #,colormap='YlOrBr',vmin=vmin,vmax=vmax)
+            cmapf = cm.get_cmap('YlOrBr', 256)
+            normf = mpl.colors.Normalize(vmin=vmin.,vmax=vmax)
+            z_range = np.linspace(np.min(Z1),np.max(Z1),256)
+            mesh.module_manager.scalar_lut_manager.lut.table = (np.array(cmapf(normf(z_range)))*255).astype('uint8')
         else:
             mlab.triangular_mesh(X1,Y1,ve*Z1,triangles,color=tuple(colors[int(facies[layer_n])]))
     if color_mode == 'facies':
