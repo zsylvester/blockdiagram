@@ -75,7 +75,7 @@ def create_block_diagram(strat,dx,ve,xoffset,yoffset,scale,ci,strat_switch,conto
     z = scale*bottom*np.ones(np.shape(vertices[:,0]))
     mlab.triangular_mesh(x,y,ve*z,triangles,color=gray)
 
-def add_stratigraphy_to_block_diagram(strat,facies,h,thalweg_z,dx,ve,xoffset,yoffset,scale,layers_switch,color_mode,colors,line_thickness):
+def add_stratigraphy_to_block_diagram(strat,facies,h,thalweg_z,dx,ve,xoffset,yoffset,scale,layers_switch,color_mode,colors,line_thickness,export):
     """function for adding stratigraphy to the sides of a block diagram
     colors layers by relative age
     strat - input array with stratigraphic surfaces
@@ -89,15 +89,16 @@ def add_stratigraphy_to_block_diagram(strat,facies,h,thalweg_z,dx,ve,xoffset,yof
     layers_switch - if equals 1, stratigraphic boundaries will be plotted on the sides as black lines
     color_mode - determines what kind of plot is created; can be 'property', 'time', or 'facies'
     colors - colors scheme for facies (list of RGB values)
-    line_thickness - tube radius for plotting layers on the sides""" 
+    line_thickness - tube radius for plotting layers on the sides
+    export - if equals 1, the display can be saved as a VRML file for use in other programs (e.g., 3D printing)""" 
     r,c,ts=np.shape(strat)
     norm = matplotlib.colors.Normalize(vmin=0.0, vmax=ts-1)
     cmap = matplotlib.cm.get_cmap('viridis')
     cmapf = matplotlib.cm.get_cmap('YlOrBr', 256)
     for layer_n in range(ts-1): # main loop
         update_progress(layer_n/(ts-1))
-        vmin = thalweg_z[layer_n] # minimum elevation (for colormap)
-        vmax = vmin + h # maximum elevation (for colormap)
+        vmin = scale*thalweg_z[layer_n] # minimum elevation (for colormap)
+        vmax = vmin + scale*h # maximum elevation (for colormap)
         normf = matplotlib.colors.Normalize(vmin=vmin,vmax=vmax)
 
         top = strat[:,0,layer_n+1]  # updip side
@@ -115,7 +116,7 @@ def add_stratigraphy_to_block_diagram(strat,facies,h,thalweg_z,dx,ve,xoffset,yof
                 X1 = scale*(xoffset + vertices[:,0])
                 Y1 = scale*(yoffset + dx*0*np.ones(np.shape(vertices[:,0])))
                 Z1 = scale*vertices[:,1]
-                plot_layers_on_one_side(layer_n,facies,color_mode,colors,X1,Y1,Z1,ve,triangles,vertices,scalars,cmap,norm,vmin,vmax)
+                plot_layers_on_one_side(layer_n,facies,color_mode,colors,X1,Y1,Z1,ve,triangles,vertices,scale*scalars,cmap,norm,vmin,vmax,export)
 
         top = strat[:,-1,layer_n+1]  # downdip side
         base = strat[:,-1,layer_n]
@@ -132,7 +133,7 @@ def add_stratigraphy_to_block_diagram(strat,facies,h,thalweg_z,dx,ve,xoffset,yof
                 X1 = scale*(xoffset + vertices[:,0])
                 Y1 = scale*(yoffset + dx*(c-1)*np.ones(np.shape(vertices[:,0])))
                 Z1 = scale*vertices[:,1]
-                plot_layers_on_one_side(layer_n,facies,color_mode,colors,X1,Y1,Z1,ve,triangles,vertices,scalars,cmap,norm,vmin,vmax)
+                plot_layers_on_one_side(layer_n,facies,color_mode,colors,X1,Y1,Z1,ve,triangles,vertices,scale*scalars,cmap,norm,vmin,vmax,export)
 
         top = strat[0,:,layer_n+1]  # left edge (looking downdip)
         base = strat[0,:,layer_n]
@@ -149,7 +150,7 @@ def add_stratigraphy_to_block_diagram(strat,facies,h,thalweg_z,dx,ve,xoffset,yof
                 X1 = scale*(xoffset + dx*0*np.ones(np.shape(vertices[:,0])))
                 Y1 = scale*(yoffset + vertices[:,0])
                 Z1 = scale*vertices[:,1]
-                plot_layers_on_one_side(layer_n,facies,color_mode,colors,X1,Y1,Z1,ve,triangles,vertices,scalars,cmap,norm,vmin,vmax)
+                plot_layers_on_one_side(layer_n,facies,color_mode,colors,X1,Y1,Z1,ve,triangles,vertices,scale*scalars,cmap,norm,vmin,vmax,export)
 
         top = strat[-1,:,layer_n+1] # right edge (looking downdip)
         base = strat[-1,:,layer_n]
@@ -166,9 +167,9 @@ def add_stratigraphy_to_block_diagram(strat,facies,h,thalweg_z,dx,ve,xoffset,yof
                 X1 = scale*(xoffset + dx*(r-1)*np.ones(np.shape(vertices[:,0])))
                 Y1 = scale*(yoffset + vertices[:,0])
                 Z1 = scale*vertices[:,1]
-                plot_layers_on_one_side(layer_n,facies,color_mode,colors,X1,Y1,Z1,ve,triangles,vertices,scalars,cmap,norm,vmin,vmax)
+                plot_layers_on_one_side(layer_n,facies,color_mode,colors,X1,Y1,Z1,ve,triangles,vertices,scale*scalars,cmap,norm,vmin,vmax,export)
 
-def create_exploded_view(strat,facies,topo,h,nx,ny,gap,dx,ve,scale,strat_switch,layers_switch,contour_switch,color_mode,colors,line_thickness,bottom):
+def create_exploded_view(strat,facies,topo,h,nx,ny,gap,dx,ve,scale,strat_switch,layers_switch,contour_switch,color_mode,colors,line_thickness,bottom,export):
     """function for creating an exploded-view block diagram
     inputs:
     strat - stack of stratigraphic surfaces
@@ -186,7 +187,8 @@ def create_exploded_view(strat,facies,topo,h,nx,ny,gap,dx,ve,scale,strat_switch,
     color_mode - determines what kind of plot is created; can be 'property', 'time', or 'facies'
     colors - colors scheme for facies (list of RGB values)
     line_thickness - - tube radius for plotting layers on the sides
-    bottom - elevation value for the bottom of the block"""
+    bottom - elevation value for the bottom of the block
+    export - if equals 1, the display can be saved as a VRML file for use in other programs (e.g., 3D printing)"""
     r,c,ts=np.shape(strat)
     thalweg_z = []
     for layer_n in range(ts-1):
@@ -204,7 +206,7 @@ def create_exploded_view(strat,facies,topo,h,nx,ny,gap,dx,ve,scale,strat_switch,
             xoffset = (y1+j*gap)*dx
             yoffset = (x1+i*gap)*dx
             create_block_diagram(strat[y1:y2,x1:x2,:],dx,ve,xoffset,yoffset,scale,5.0,strat_switch,contour_switch,bottom,topo_min,topo_max)
-            add_stratigraphy_to_block_diagram(strat[y1:y2,x1:x2,:],facies,h,thalweg_z,dx,ve,xoffset,yoffset,scale,layers_switch,color_mode,colors,line_thickness)
+            add_stratigraphy_to_block_diagram(strat[y1:y2,x1:x2,:],facies,h,thalweg_z,dx,ve,xoffset,yoffset,scale,layers_switch,color_mode,colors,line_thickness,export)
             count = count+1
             print("block "+str(count)+" done, out of "+str(nx*ny)+" blocks")
 
@@ -336,7 +338,7 @@ def create_section(profile,dx,bottom):
         triangles.append([i+1,n-i-1,n-i-2])
     return vertices, triangles
 
-def plot_layers_on_one_side(layer_n,facies,color_mode,colors,X1,Y1,Z1,ve,triangles,vertices,scalars,cmap,norm,vmin,vmax):
+def plot_layers_on_one_side(layer_n,facies,color_mode,colors,X1,Y1,Z1,ve,triangles,vertices,scalars,cmap,norm,vmin,vmax,export):
     """function for plotting layers on one side of a block
     inputs:
     layer_n - layer number
@@ -352,22 +354,28 @@ def plot_layers_on_one_side(layer_n,facies,color_mode,colors,X1,Y1,Z1,ve,triangl
     norm - color normalization function used in 'time' mode
     cmapf - colormap used for layers in 'property' mode
     normf - color normalization function used in 'property' mode
+    export - if equals 1, the display can be saved as a VRML file for use in other programs (e.g., 3D printing)
     """
     if color_mode == 'time':
         mlab.triangular_mesh(X1,Y1,ve*Z1,triangles,color=cmap(norm(layer_n))[:3])
     if color_mode == 'property':
         if facies[layer_n] == 1:
-            mesh = mlab.triangular_mesh(X1,Y1,ve*Z1,triangles,scalars=scalars) #,colormap='YlOrBr',vmin=vmin,vmax=vmax)
-            cmapf = cm.get_cmap('YlOrBr', 256)
-            normf = mpl.colors.Normalize(vmin=vmin.,vmax=vmax)
-            z_range = np.linspace(np.min(Z1),np.max(Z1),256)
-            mesh.module_manager.scalar_lut_manager.lut.table = (np.array(cmapf(normf(z_range)))*255).astype('uint8')
+            if export == 1:
+                vmin = ve*vmin
+                vmax = ve*vmax
+                mesh = mlab.triangular_mesh(X1,Y1,ve*Z1,triangles,scalars=ve*scalars,colormap='YlOrBr',vmin=vmin,vmax=vmax)
+                cmapf = matplotlib.cm.get_cmap('YlOrBr',256)
+                normf = matplotlib.colors.Normalize(vmin=vmin,vmax=vmax)
+                z_range = np.linspace(np.min(ve*Z1),np.max(ve*Z1),256)
+                mesh.module_manager.scalar_lut_manager.lut.table = (np.array(cmapf(normf(z_range)))*255).astype('uint8')
+            else:
+                mesh = mlab.triangular_mesh(X1,Y1,ve*Z1,triangles,scalars=scalars,colormap='YlOrBr',vmin=vmin,vmax=vmax)
         else:
             mlab.triangular_mesh(X1,Y1,ve*Z1,triangles,color=tuple(colors[int(facies[layer_n])]))
     if color_mode == 'facies':
         mlab.triangular_mesh(X1,Y1,ve*Z1,triangles,color=tuple(colors[int(facies[layer_n])]))
 
-def create_random_section_2_points(strat,facies,thalweg_z,h,scale,ve,color_mode,colors,x1,x2,y1,y2,s1,dx,bottom):
+def create_random_section_2_points(strat,facies,thalweg_z,h,scale,ve,color_mode,colors,x1,x2,y1,y2,s1,dx,bottom,export):
     r, c, ts = np.shape(strat)
     dist = dx*((x2-x1)**2 + (y2-y1)**2)**0.5
     s2 = s1*dx+dist
@@ -396,25 +404,25 @@ def create_random_section_2_points(strat,facies,thalweg_z,h,scale,ve,color_mode,
                 X1 = scale*dx*Xrand[inds]
                 Y1 = scale*dx*Yrand[inds]
                 Z1 = scale*vertices[:,1]
-                plot_layers_on_one_side(layer_n,facies,color_mode,colors,X1,Y1,Z1,ve,triangles,vertices,scalars,cmap,norm,vmin,vmax)
+                plot_layers_on_one_side(layer_n,facies,color_mode,colors,X1,Y1,Z1,ve,triangles,vertices,scalars,cmap,norm,vmin,vmax,export)
         
-def create_random_section_n_points(strat,facies,topo,h,scale,ve,color_mode,colors,x1,x2,y1,y2,dx,bottom):
+def create_random_section_n_points(strat,facies,topo,h,scale,ve,color_mode,colors,x1,x2,y1,y2,dx,bottom,export):
     r, c, ts = np.shape(strat)
     thalweg_z = []
     for layer_n in range(ts-1):
         t = layer_n - np.mod(layer_n,3)
         thalweg_z.append(np.min(topo[:,:,int(t+t/3)]))
     if len(x1)==1:
-        create_random_section_2_points(strat,facies,thalweg_z,h,scale,ve,color_mode,colors,x1,x2,y1,y2,0,dx,bottom)
+        create_random_section_2_points(strat,facies,thalweg_z,h,scale,ve,color_mode,colors,x1,x2,y1,y2,0,dx,bottom,export)
     else:
         count = 0
         dx1,dy1,ds1,s1 = compute_derivatives(x1,y1)
         for i in range(len(x1)):
-            create_random_section_2_points(strat,facies,thalweg_z,h,scale,ve,color_mode,colors,x1[i],x2[i],y1[i],y2[i],s1[i],dx,bottom)
+            create_random_section_2_points(strat,facies,thalweg_z,h,scale,ve,color_mode,colors,x1[i],x2[i],y1[i],y2[i],s1[i],dx,bottom,export)
             count = count+1
             print("panel "+str(count)+" done, out of "+str(len(x1))+" panels")
 
-def create_random_cookie(strat,facies,topo,h,scale,ve,color_mode,colors,x1,x2,y1,y2,dx,bottom):
+def create_random_cookie(strat,facies,topo,h,scale,ve,color_mode,colors,x1,x2,y1,y2,dx,bottom,export):
     r, c, ts = np.shape(strat)
     thalweg_z = []
     for layer_n in range(ts-1):
@@ -423,10 +431,10 @@ def create_random_cookie(strat,facies,topo,h,scale,ve,color_mode,colors,x1,x2,y1
     count = 0
     dx1,dy1,ds1,s1 = compute_derivatives(x1,y1)
     for i in range(len(x1)):
-        create_random_section_2_points(strat,facies,thalweg_z,h,scale,ve,color_mode,colors,x1[i],x2[i],y1[i],y2[i],s1[i],dx,bottom)
+        create_random_section_2_points(strat,facies,thalweg_z,h,scale,ve,color_mode,colors,x1[i],x2[i],y1[i],y2[i],s1[i],dx,bottom,export)
         count = count+1
         print("panel "+str(count)+" done, out of "+str(len(x1)+1)+" panels")
-    create_random_section_2_points(strat,facies,thalweg_z,h,scale,ve,color_mode,colors,x2[-1],x1[0],y2[-1],y1[0],s1[-1]+np.sqrt((x1[0]-x2[-1])**2+(y1[0]-y2[-1])**2),dx,bottom)
+    create_random_section_2_points(strat,facies,thalweg_z,h,scale,ve,color_mode,colors,x2[-1],x1[0],y2[-1],y1[0],s1[-1]+np.sqrt((x1[0]-x2[-1])**2+(y1[0]-y2[-1])**2),dx,bottom,export)
     polygon = []
     for i in range(len(x1)):
         polygon.append((x1[i]+0.5,y1[i]+0.5))
