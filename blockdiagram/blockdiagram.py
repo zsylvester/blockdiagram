@@ -213,8 +213,8 @@ def create_fence_diagram(strat,facies,topo,h,nx,ny,gap,dx,ve,scale,layers_switch
     strat - stack of stratigraphic surfaces
     facies - 1D array of facies codes for layers
     topo - stack of topographic surfaces
-    nx - number of blocks in x direction
-    ny - number of blocks in y direction
+    nx - number of strike sections
+    ny - number of dip sections
     gap - gap between blocks (number of gridcells)
     dx - gridcell size
     ve - vertical exaggeration
@@ -237,7 +237,7 @@ def create_fence_diagram(strat,facies,topo,h,nx,ny,gap,dx,ve,scale,layers_switch
     count = 0
     cmap = matplotlib.cm.get_cmap('viridis')
     norm = matplotlib.colors.Normalize(vmin=0.0, vmax=ts-1)
-    for nsec in range(1,nx+1):
+    for nsec in range(1,nx+1): # strike sections
         x1 = nsec*int(c/(nx+1))
         vertices, triangles = create_section(strat[:,x1,0],dx,bottom) 
         x = scale*(vertices[:,0])
@@ -248,7 +248,7 @@ def create_fence_diagram(strat,facies,topo,h,nx,ny,gap,dx,ve,scale,layers_switch
             update_progress(layer_n/(ts-1))
             vmin = scale*thalweg_z[layer_n] # minimum elevation (for colormap)
             vmax = vmin + scale*h # maximum elevation (for colormap)
-            top = strat[:,x1,layer_n+1]  # updip side
+            top = strat[:,x1,layer_n+1]  
             base = strat[:,x1,layer_n]
             if layers_switch == 1:
                 X1 = scale*(dx*np.arange(0,r))
@@ -265,7 +265,7 @@ def create_fence_diagram(strat,facies,topo,h,nx,ny,gap,dx,ve,scale,layers_switch
                     Z1 = scale*vertices[:,1]
                     plot_layers_on_one_side(layer_n,facies,color_mode,colors,X1,Y1,Z1,ve,triangles,vertices,scale*scalars,cmap,norm,vmin,vmax,export)
         print('done with section '+str(nsec)+' of '+str(nx)+' strike sections')
-    for nsec in range(1,ny+1):
+    for nsec in range(1,ny+1): # dip sections
         y1 = nsec*int(r/(ny+1))
         vertices, triangles = create_section(strat[y1,:,0],dx,bottom) 
         x = scale*(y1*dx+np.zeros(np.shape(vertices[:,0])))
@@ -276,7 +276,7 @@ def create_fence_diagram(strat,facies,topo,h,nx,ny,gap,dx,ve,scale,layers_switch
             update_progress(layer_n/(ts-1))
             vmin = scale*thalweg_z[layer_n] # minimum elevation (for colormap)
             vmax = vmin + scale*h # maximum elevation (for colormap)
-            top = strat[y1,:,layer_n+1]  # left edge (looking downdip)
+            top = strat[y1,:,layer_n+1]  
             base = strat[y1,:,layer_n]
             if layers_switch == 1:
                 X1 = scale*(y1*dx+np.zeros(np.shape(base)))
