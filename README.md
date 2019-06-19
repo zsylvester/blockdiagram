@@ -15,7 +15,7 @@ PIL
 
 ## Usage
 
-The main function in 'blockdiagram' is 'create_exploded_view'. It can either be used to generate a normal block diagram or an exploded-view block diagram, in which the model is split into several smaller blocks so that more stratigraphic detail is visible. Here is a typical set of input parameters:
+The main function in 'blockdiagram' is 'create_exploded_view'. It can either be used to generate a normal block diagram or an exploded-view block diagram, in which the model is split into several smaller blocks so that more stratigraphic detail is visible. Fence diagrams can be created as well. Here is a typical set of input parameters:
 
 ```python
 mlab.figure(bgcolor=(1,1,1)) 
@@ -59,7 +59,7 @@ bd.create_random_section_n_points(chb_3d.strat,chb_3d.facies,chb_3d.topo,h,scale
 <img src="https://github.com/zsylvester/blockdiagram/blob/master/fluvial_model_example_6.png" width="300">
 <img src="https://github.com/zsylvester/blockdiagram/blob/master/fluvial_model_example_7.png" width="800">
 
-Finally, you can also cut a "cookie" from the model, using the 'create_random_cookie' option:
+You can also cut a "cookie" from the model, using the 'create_random_cookie' option:
 
 ```python
 xcoords, ycoords = bd.select_random_section(chb_3d.strat) # define x and y coordinates for random section
@@ -69,6 +69,14 @@ bd.create_random_cookie(chb_3d.strat,chb_3d.facies,chb_3d.topo,h,scale,ve,color_
 ```
 <img src="https://github.com/zsylvester/blockdiagram/blob/master/fluvial_model_example_4.png" width="300">
 <img src="https://github.com/zsylvester/blockdiagram/blob/master/fluvial_model_example_3.png" width="800">
+
+A more traditional way to look at 3D data or models is a fence diagram:
+
+```python
+mlab.figure(bgcolor=(1,1,1))
+bd.create_fence_diagram(chb_3d.strat,chb_3d.facies,chb_3d.topo,h,6,2,gap,dx,ve,scale,layers_switch,color_mode,colors,line_thickness,bottom,export)
+```
+<img src="https://github.com/zsylvester/blockdiagram/blob/master/fluvial_model_example_8.png" width="800">
 
 ## License
 

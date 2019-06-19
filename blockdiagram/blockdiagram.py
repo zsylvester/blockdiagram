@@ -233,8 +233,6 @@ def create_fence_diagram(strat,facies,topo,h,nx,ny,gap,dx,ve,scale,layers_switch
         thalweg_z.append(np.min(topo[:,:,int(t+t/3)]))
     topo_min = np.min(strat[:,:,-1])
     topo_max = np.max(strat[:,:,-1])
-    z1 = strat[:,:,0]
-    count = 0
     cmap = matplotlib.cm.get_cmap('viridis')
     norm = matplotlib.colors.Normalize(vmin=0.0, vmax=ts-1)
     for nsec in range(1,nx+1): # strike sections
