@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
 from mayavi import mlab
-from IPython.display import clear_output
 import time, sys
 import scipy
 from PIL import Image, ImageDraw
@@ -94,12 +93,10 @@ def add_stratigraphy_to_block_diagram(strat,facies,h,thalweg_z,dx,ve,xoffset,yof
     r,c,ts=np.shape(strat)
     norm = matplotlib.colors.Normalize(vmin=0.0, vmax=ts-1)
     cmap = matplotlib.cm.get_cmap('viridis')
-    cmapf = matplotlib.cm.get_cmap('YlOrBr', 256)
     for layer_n in range(ts-1): # main loop
         update_progress(layer_n/(ts-1))
         vmin = scale*thalweg_z[layer_n] # minimum elevation (for colormap)
         vmax = vmin + scale*h # maximum elevation (for colormap)
-        normf = matplotlib.colors.Normalize(vmin=vmin,vmax=vmax)
 
         top = strat[:,0,layer_n+1]  # updip side
         base = strat[:,0,layer_n]
@@ -209,6 +206,93 @@ def create_exploded_view(strat,facies,topo,h,nx,ny,gap,dx,ve,scale,strat_switch,
             add_stratigraphy_to_block_diagram(strat[y1:y2,x1:x2,:],facies,h,thalweg_z,dx,ve,xoffset,yoffset,scale,layers_switch,color_mode,colors,line_thickness,export)
             count = count+1
             print("block "+str(count)+" done, out of "+str(nx*ny)+" blocks")
+
+def create_fence_diagram(strat,facies,topo,h,nx,ny,gap,dx,ve,scale,layers_switch,color_mode,colors,line_thickness,bottom,export):
+    """function for creating a fence diagram
+    inputs:
+    strat - stack of stratigraphic surfaces
+    facies - 1D array of facies codes for layers
+    topo - stack of topographic surfaces
+    nx - number of blocks in x direction
+    ny - number of blocks in y direction
+    gap - gap between blocks (number of gridcells)
+    dx - gridcell size
+    ve - vertical exaggeration
+    scale - scaling factor (for whole model)
+    layers_switch - if equals 1, the stratigraphic surfaces will be plotted on the sides (adds a lot of triangles - not good for 3D printing)
+    color_mode - determines what kind of plot is created; can be 'property', 'time', or 'facies'
+    colors - colors scheme for facies (list of RGB values)
+    line_thickness - - tube radius for plotting layers on the sides
+    bottom - elevation value for the bottom of the block
+    export - if equals 1, the display can be saved as a VRML file for use in other programs (e.g., 3D printing)"""
+    r,c,ts=np.shape(strat)
+    gray = (0.6,0.6,0.6)
+    thalweg_z = []
+    for layer_n in range(ts-1):
+        t = layer_n - np.mod(layer_n,3)
+        thalweg_z.append(np.min(topo[:,:,int(t+t/3)]))
+    topo_min = np.min(strat[:,:,-1])
+    topo_max = np.max(strat[:,:,-1])
+    z1 = strat[:,:,0]
+    count = 0
+    cmap = matplotlib.cm.get_cmap('viridis')
+    norm = matplotlib.colors.Normalize(vmin=0.0, vmax=ts-1)
+    for nsec in range(1,nx+1):
+        x1 = nsec*int(c/(nx+1))
+        vertices, triangles = create_section(strat[:,x1,0],dx,bottom) 
+        x = scale*(vertices[:,0])
+        y = scale*(x1*dx+np.zeros(np.shape(vertices[:,0])))
+        z = scale*ve*vertices[:,1]
+        mlab.triangular_mesh(x,y,z,triangles,color=gray)
+        for layer_n in range(ts-1): # main loop
+            update_progress(layer_n/(ts-1))
+            vmin = scale*thalweg_z[layer_n] # minimum elevation (for colormap)
+            vmax = vmin + scale*h # maximum elevation (for colormap)
+            top = strat[:,x1,layer_n+1]  # updip side
+            base = strat[:,x1,layer_n]
+            if layers_switch == 1:
+                X1 = scale*(dx*np.arange(0,r))
+                Y1 = scale*(x1*dx+np.zeros(np.shape(base)))
+                Z1 = ve*scale*base
+                mlab.plot3d(X1,Y1,Z1,color=(0,0,0),tube_radius=line_thickness)
+            if np.max(top-base)>0:
+                Points,Inds = triangulate_layers(top,base,dx)
+                for i in range(len(Points)):
+                    vertices = Points[i]
+                    triangles, scalars = create_triangles(vertices)
+                    X1 = scale*(vertices[:,0])
+                    Y1 = scale*(x1*dx+dx*0*np.ones(np.shape(vertices[:,0])))
+                    Z1 = scale*vertices[:,1]
+                    plot_layers_on_one_side(layer_n,facies,color_mode,colors,X1,Y1,Z1,ve,triangles,vertices,scale*scalars,cmap,norm,vmin,vmax,export)
+        print('done with section '+str(nsec)+' of '+str(nx)+' strike sections')
+    for nsec in range(1,ny+1):
+        y1 = nsec*int(r/(ny+1))
+        vertices, triangles = create_section(strat[y1,:,0],dx,bottom) 
+        x = scale*(y1*dx+np.zeros(np.shape(vertices[:,0])))
+        y = scale*(vertices[:,0])
+        z = scale*ve*vertices[:,1]
+        mlab.triangular_mesh(x,y,z,triangles,color=gray)
+        for layer_n in range(ts-1): # main loop
+            update_progress(layer_n/(ts-1))
+            vmin = scale*thalweg_z[layer_n] # minimum elevation (for colormap)
+            vmax = vmin + scale*h # maximum elevation (for colormap)
+            top = strat[y1,:,layer_n+1]  # left edge (looking downdip)
+            base = strat[y1,:,layer_n]
+            if layers_switch == 1:
+                X1 = scale*(y1*dx+np.zeros(np.shape(base)))
+                Y1 = scale*(dx*np.arange(0,c))
+                Z1 = ve*scale*base
+                mlab.plot3d(X1,Y1,Z1,color=(0,0,0),tube_radius=line_thickness)
+            if np.max(top-base)>0:
+                Points,Inds = triangulate_layers(top,base,dx)
+                for i in range(len(Points)):
+                    vertices = Points[i]
+                    triangles, scalars = create_triangles(vertices)
+                    X1 = scale*(y1*dx + dx*0*np.ones(np.shape(vertices[:,0])))
+                    Y1 = scale*(vertices[:,0])
+                    Z1 = scale*vertices[:,1]
+                    plot_layers_on_one_side(layer_n,facies,color_mode,colors,X1,Y1,Z1,ve,triangles,vertices,scale*scalars,cmap,norm,vmin,vmax,export)
+        print('done with section '+str(nsec)+' of '+str(ny)+' dip sections')
 
 ########################
 # ADDITIONAL FUNCTIONS #
@@ -352,8 +436,6 @@ def plot_layers_on_one_side(layer_n,facies,color_mode,colors,X1,Y1,Z1,ve,triangl
     scalars - scalars used for coloring the mesh in 'property' mode (= z-value of the base of current layer)
     cmap - colormap used for layers in 'time' mode
     norm - color normalization function used in 'time' mode
-    cmapf - colormap used for layers in 'property' mode
-    normf - color normalization function used in 'property' mode
     export - if equals 1, the display can be saved as a VRML file for use in other programs (e.g., 3D printing)
     """
     if color_mode == 'time':
@@ -380,9 +462,7 @@ def create_random_section_2_points(strat,facies,thalweg_z,h,scale,ve,color_mode,
     dist = dx*((x2-x1)**2 + (y2-y1)**2)**0.5
     s2 = s1*dx+dist
     num = int(dist/float(dx))
-    norm = matplotlib.colors.Normalize(vmin=0.0, vmax=ts-1)
     cmap = matplotlib.cm.get_cmap('viridis')
-    cmapf = matplotlib.cm.get_cmap('YlOrBr', 256)
     Xrand, Yrand, Srand = np.linspace(x1,x2,num), np.linspace(y1,y2,num), np.linspace(s1*dx,s2,num)
     base = scipy.ndimage.map_coordinates(strat[:,:,0], np.vstack((Yrand,Xrand)))
     vertices, triangles = create_section(base,dx,bottom) 
@@ -392,7 +472,6 @@ def create_random_section_2_points(strat,facies,thalweg_z,h,scale,ve,color_mode,
         update_progress(layer_n/(ts-1))
         vmin = thalweg_z[layer_n] # minimum elevation (for colormap)
         vmax = vmin + h # maximum elevation (for colormap)
-        normf = matplotlib.colors.Normalize(vmin=vmin,vmax=vmax)
         top = scipy.ndimage.map_coordinates(strat[:,:,layer_n+1], np.vstack((Yrand,Xrand)))
         base = scipy.ndimage.map_coordinates(strat[:,:,layer_n], np.vstack((Yrand,Xrand)))
         if np.max(top-base)>1e-6:
