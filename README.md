@@ -13,6 +13,12 @@ mayavi
 scipy  
 PIL
 
+## Installation
+
+```code
+pip install blockdiagram
+```
+
 ## Usage
 
 The main function in 'blockdiagram' is 'create_exploded_view'. It can either be used to generate a normal block diagram or an exploded-view block diagram, in which the model is split into several smaller blocks so that more stratigraphic detail is visible. Fence diagrams can be created as well. Here is a typical set of input parameters:
