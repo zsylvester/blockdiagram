@@ -461,6 +461,7 @@ def create_random_section_2_points(strat,facies,thalweg_z,h,scale,ve,color_mode,
     s2 = s1*dx+dist
     num = int(dist/float(dx))
     cmap = matplotlib.cm.get_cmap('viridis')
+    norm = matplotlib.colors.Normalize(vmin=0.0, vmax=ts-1)
     Xrand, Yrand, Srand = np.linspace(x1,x2,num), np.linspace(y1,y2,num), np.linspace(s1*dx,s2,num)
     base = scipy.ndimage.map_coordinates(strat[:,:,0], np.vstack((Yrand,Xrand)))
     vertices, triangles = create_section(base,dx,bottom) 
