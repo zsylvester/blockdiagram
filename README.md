@@ -1,7 +1,7 @@
 
 <img src="https://github.com/zsylvester/blockdiagram/blob/master/blockdiagram_logo.png" width="400">
 
-### Note that `blockdiagram` is now superceded by the `stratigraph` (https://github.com/zsylvester/stratigraph)package. You should check out `stratigraph` if you are interested in creating 3D displays similar to those created by `blockdiagram`.
+### Note that `blockdiagram` is now superceded by the `stratigraph` (https://github.com/zsylvester/stratigraph) package. You should check out `stratigraph` if you are interested in creating 3D displays similar to those created by `blockdiagram`.
 
 ## Description
 
