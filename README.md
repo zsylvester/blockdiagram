@@ -1,6 +1,8 @@
 
 <img src="https://github.com/zsylvester/blockdiagram/blob/master/blockdiagram_logo.png" width="400">
 
+### Note that `blockdiagram` is now superceded by the [`stratigraph`](https://github.com/zsylvester/stratigraph) package. You should check out `stratigraph` if you are interested in creating 3D displays similar to those created by `blcokdiagram`.
+
 ## Description
 
 'blockdiagram' is a Python module for creating block diagrams and other three-dimensional displays from stratigraphic models. It is designed to work with [meanderpy](https://github.com/zsylvester/meanderpy), but it should work with any model that consists of a stack of stratigraphic surfaces.
